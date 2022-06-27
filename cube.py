@@ -13,7 +13,9 @@ class Cube:
     def __init__(self, centerPosition: np.array, size: np.array):
         self.centerPosition = centerPosition
         self.size = size
-        self.eulerAngle = np.array([0, 0, 0])
+        self.vertices = []
+
+        self.eulerAngle = np.array([45, 45, 45])
         self.calculateVertices()
     
     def updateEulerAngle(self, eulerAngle: np.array) -> None:
@@ -24,60 +26,44 @@ class Cube:
         centerPosition = self.centerPosition
         size = self.size
 
-        self.v0 = np.array([centerPosition[0] - size[0] / 2, centerPosition[1] - size[1] / 2, centerPosition[2] - size[2] / 2])
-        self.v1 = np.array([centerPosition[0] + size[0] / 2, centerPosition[1] - size[1] / 2, centerPosition[2] - size[2] / 2])
-        self.v2 = np.array([centerPosition[0] - size[0] / 2, centerPosition[1] + size[1] / 2, centerPosition[2] - size[2] / 2])
-        self.v3 = np.array([centerPosition[0] + size[0] / 2, centerPosition[1] + size[1] / 2, centerPosition[2] - size[2] / 2])
+        v0 = np.array([centerPosition[0] - size[0] / 2, centerPosition[1] - size[1] / 2, centerPosition[2] - size[2] / 2])
+        v1 = np.array([centerPosition[0] + size[0] / 2, centerPosition[1] - size[1] / 2, centerPosition[2] - size[2] / 2])
+        v2 = np.array([centerPosition[0] - size[0] / 2, centerPosition[1] + size[1] / 2, centerPosition[2] - size[2] / 2])
+        v3 = np.array([centerPosition[0] + size[0] / 2, centerPosition[1] + size[1] / 2, centerPosition[2] - size[2] / 2])
 
-        self.v4 = np.array([centerPosition[0] - size[0] / 2, centerPosition[1] - size[1] / 2, centerPosition[2] + size[2] / 2])
-        self.v5 = np.array([centerPosition[0] + size[0] / 2, centerPosition[1] - size[1] / 2, centerPosition[2] + size[2] / 2])
-        self.v6 = np.array([centerPosition[0] - size[0] / 2, centerPosition[1] + size[1] / 2, centerPosition[2] + size[2] / 2])
-        self.v7 = np.array([centerPosition[0] + size[0] / 2, centerPosition[1] + size[1] / 2, centerPosition[2] + size[2] / 2])
+        v4 = np.array([centerPosition[0] - size[0] / 2, centerPosition[1] - size[1] / 2, centerPosition[2] + size[2] / 2])
+        v5 = np.array([centerPosition[0] + size[0] / 2, centerPosition[1] - size[1] / 2, centerPosition[2] + size[2] / 2])
+        v6 = np.array([centerPosition[0] - size[0] / 2, centerPosition[1] + size[1] / 2, centerPosition[2] + size[2] / 2])
+        v7 = np.array([centerPosition[0] + size[0] / 2, centerPosition[1] + size[1] / 2, centerPosition[2] + size[2] / 2])
 
-        self.v0 = centerPosition + RotateX(self.v0 - centerPosition, DegreesToRadians(self.eulerAngle[0]))
-        self.v0 = centerPosition + RotateY(self.v0 - centerPosition, DegreesToRadians(self.eulerAngle[1]))
-        self.v0 = centerPosition + RotateZ(self.v0 - centerPosition, DegreesToRadians(self.eulerAngle[2]))
+        v0 = self.calculateVertex(v0)
+        v1 = self.calculateVertex(v1)
+        v2 = self.calculateVertex(v2)
+        v3 = self.calculateVertex(v3)
+        v4 = self.calculateVertex(v4)
+        v5 = self.calculateVertex(v5)
+        v6 = self.calculateVertex(v6)
+        v7 = self.calculateVertex(v7)
 
-        self.v1 = centerPosition + RotateX(self.v1 - centerPosition, DegreesToRadians(self.eulerAngle[0]))
-        self.v1 = centerPosition + RotateY(self.v1 - centerPosition, DegreesToRadians(self.eulerAngle[1]))
-        self.v1 = centerPosition + RotateZ(self.v1 - centerPosition, DegreesToRadians(self.eulerAngle[2]))
+        self.vertices = [v0, v1, v2, v3, v4, v5, v6, v7]
 
-        self.v2 = centerPosition + RotateX(self.v2 - centerPosition, DegreesToRadians(self.eulerAngle[0]))
-        self.v2 = centerPosition + RotateY(self.v2 - centerPosition, DegreesToRadians(self.eulerAngle[1]))
-        self.v2 = centerPosition + RotateZ(self.v2 - centerPosition, DegreesToRadians(self.eulerAngle[2]))
+    def calculateVertex(self, vertex: np.array) -> np.array:
+        vertex = self.centerPosition + RotateX(vertex - self.centerPosition, DegreesToRadians(self.eulerAngle[0]))
+        vertex = self.centerPosition + RotateY(vertex - self.centerPosition, DegreesToRadians(self.eulerAngle[1]))
+        vertex = self.centerPosition + RotateZ(vertex - self.centerPosition, DegreesToRadians(self.eulerAngle[2]))
+        return vertex
 
-        self.v3 = centerPosition + RotateX(self.v3 - centerPosition, DegreesToRadians(self.eulerAngle[0]))
-        self.v3 = centerPosition + RotateY(self.v3 - centerPosition, DegreesToRadians(self.eulerAngle[1]))
-        self.v3 = centerPosition + RotateZ(self.v3 - centerPosition, DegreesToRadians(self.eulerAngle[2]))
+    def get_vertices(self) -> list[np.array]:
+        return self.vertices
 
-        self.v4 = centerPosition + RotateX(self.v4 - centerPosition, DegreesToRadians(self.eulerAngle[0]))
-        self.v4 = centerPosition + RotateY(self.v4 - centerPosition, DegreesToRadians(self.eulerAngle[1]))
-        self.v4 = centerPosition + RotateZ(self.v4 - centerPosition, DegreesToRadians(self.eulerAngle[2]))
-
-        self.v5 = centerPosition + RotateX(self.v5 - centerPosition, DegreesToRadians(self.eulerAngle[0]))
-        self.v5 = centerPosition + RotateY(self.v5 - centerPosition, DegreesToRadians(self.eulerAngle[1]))
-        self.v5 = centerPosition + RotateZ(self.v5 - centerPosition, DegreesToRadians(self.eulerAngle[2]))
-
-        self.v6 = centerPosition + RotateX(self.v6 - centerPosition, DegreesToRadians(self.eulerAngle[0]))
-        self.v6 = centerPosition + RotateY(self.v6 - centerPosition, DegreesToRadians(self.eulerAngle[1]))
-        self.v6 = centerPosition + RotateZ(self.v6 - centerPosition, DegreesToRadians(self.eulerAngle[2]))
-
-        self.v7 = centerPosition + RotateX(self.v7 - centerPosition, DegreesToRadians(self.eulerAngle[0]))
-        self.v7 = centerPosition + RotateY(self.v7 - centerPosition, DegreesToRadians(self.eulerAngle[1]))
-        self.v7 = centerPosition + RotateZ(self.v7 - centerPosition, DegreesToRadians(self.eulerAngle[2]))
-
-    def get_line_loops(self) -> list[list[np.array]]:
+    def get_triangles(self) -> list[int]:
         return [
-            [self.v0, self.v1, self.v3, self.v2, self.v0],
-            [self.v4, self.v5, self.v7, self.v6, self.v4],
-        ]
-    
-    def get_lines(self) -> list[tuple[np.array]]:
-        return [
-            (self.v0, self.v4),
-            (self.v1, self.v5),
-            (self.v2, self.v6),
-            (self.v3, self.v7),
+            0, 2, 1, 2, 3, 1, 
+            5, 6, 4, 5, 7, 6,
+            4, 2, 0, 4, 6, 2, 
+            1, 3, 5, 3, 7, 5,
+            1, 4, 0, 1, 5, 4, 
+            2, 6, 3, 6, 7, 3,
         ]
 
 def DegreesToRadians(degrees: float) -> float:

@@ -35,20 +35,19 @@ class Sovellus:
         kulma = kulma + np.array([0.1, 0.1, 0.1])
         self.scene.kuutio.updateEulerAngle(kulma)
 
-        for start, end in self.scene.kuutio.get_lines():
-            start = tuple(self.camera.perspectiveProject(start))
-            end = tuple(self.camera.perspectiveProject(end))
-            pygame.draw.line(self.screen, (0, 0, 0), start, end)
-
-        for line_loop in self.scene.kuutio.get_line_loops():
-            points = []
-            for start in line_loop:
-                start = tuple(self.camera.perspectiveProject(start))
-                points.append(start)
-            pygame.draw.polygon(self.screen, (0, 0, 0), points, 1)
+        vertices = self.scene.kuutio.get_vertices()
+        triangles = self.scene.kuutio.get_triangles()
+        self.draw_triangles(vertices, triangles)
 
         pygame.display.flip()
         self.clock.tick(60)
+
+    def draw_triangles(self, vertices: list[np.array], triangles: list[int]) -> None:
+        for i in range(len(triangles) // 3):
+            v0 = self.camera.perspectiveProject(vertices[triangles[i * 3]])
+            v1 = self.camera.perspectiveProject(vertices[triangles[i * 3 + 1]])
+            v2 = self.camera.perspectiveProject(vertices[triangles[i * 3 + 2]])
+            pygame.draw.polygon(self.screen, (0, 0, 0), (v0, v1, v2), 1)
 
 class Scene:
     def __init__(self):
