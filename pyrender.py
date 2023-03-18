@@ -3,56 +3,61 @@ import numpy as np
 
 from camera import Camera
 from cube import Cube
+import vector
 
-class Sovellus:
+class Application:
     def __init__(self):
         pygame.init()
         self.width = 640
         self.height = 480
+        self.eulerAngle = [0,0,0]
 
         self.screen = pygame.display.set_mode((640, 480))
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Arial", 14)
-        
-        self.scene = Scene()
-        self.camera = Camera(np.array([0, 0, 5]), np.array([0, 0, -1]))
 
-    def suorita(self):
+        self.camera = Camera([0, 0, 5], [0, 0, -1])
+        self.cube = Cube((0, 0, 0), (2, 2, 2))
+
+    def run(self):
         ms = self.clock.tick(60)
         while True:
-            self.tapahtumat(ms)
-            self.render()
+            self.events(ms)
+            self.render(ms)
 
-    def tapahtumat(self, deltaTime: int):
-        for tapahtuma in pygame.event.get():
-            if tapahtuma.type == pygame.QUIT:
+    def events(self, time: int):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 exit()
 
-    def render(self):
+    def render(self, time: int):
         self.screen.fill((255, 255, 255))
 
-        kulma = self.scene.kuutio.eulerAngle
-        kulma = kulma + np.array([0.1, 0.1, 0.1])
-        self.scene.kuutio.updateEulerAngle(kulma)
+        angle = np.array([0,0.5,0])
+        self.eulerAngle += angle
 
-        vertices = self.scene.kuutio.get_vertices()
-        triangles = self.scene.kuutio.get_triangles()
+        vertices = self.cube.get_vertices()
+        triangles = self.cube.get_triangles()
         self.draw_triangles(vertices, triangles)
 
         pygame.display.flip()
         self.clock.tick(60)
 
-    def draw_triangles(self, vertices: list[np.array], triangles: list[int]) -> None:
+    def draw_triangles(self, vertices: list[np.ndarray], triangles: list[int]) -> None:
         for i in range(len(triangles) // 3):
-            v0 = self.camera.perspectiveProject(vertices[triangles[i * 3]])
-            v1 = self.camera.perspectiveProject(vertices[triangles[i * 3 + 1]])
-            v2 = self.camera.perspectiveProject(vertices[triangles[i * 3 + 2]])
-            pygame.draw.polygon(self.screen, (0, 0, 0), (v0, v1, v2), 1)
+            v0 = vertices[triangles[i * 3 + 0]]
+            v1 = vertices[triangles[i * 3 + 1]]
+            v2 = vertices[triangles[i * 3 + 2]]
+            
+            v0 = vector.rotate(v0, self.cube.centerPosition, self.eulerAngle)
+            v1 = vector.rotate(v1, self.cube.centerPosition, self.eulerAngle)
+            v2 = vector.rotate(v2, self.cube.centerPosition, self.eulerAngle)
 
-class Scene:
-    def __init__(self):
-        self.kuutio = Cube((0, 0, 0), (2, 2, 2))
+            px0 = self.camera.perspectiveProject(v0)
+            px1 = self.camera.perspectiveProject(v1)
+            px2 = self.camera.perspectiveProject(v2)
+            
+            pygame.draw.polygon(self.screen, (0, 0, 0), (px0, px1, px2), 1)
 
 if __name__ == "__main__":
-    sovellus = Sovellus()
-    sovellus.suorita()
+    Application().run()

@@ -4,20 +4,29 @@ import numpy as np
 from camera import Camera
 
 class CameraTest(unittest.TestCase):
+    def test_perspective_project_origin(self):
+        cameraPosition = [0,0,1]
+        cameraDirection = [0,0,-1]
+        worldCoordinates = [0,0,0]
+        
+        camera = Camera(cameraPosition, cameraDirection)
+        screenCoordinates = camera.perspectiveProject(worldCoordinates)
+
+        self.assertTrue(np.array_equal([320,240], screenCoordinates))
+
     def test_perspective_project(self):
         """
         When the camera direction is orthogonal to a 3D vector,
         the 2D vector should be in the centre of the image.
         """
-        cameraPosition = np.array([10, 15, 5])
-        cameraDirection = np.array([0, 0, -1])
-        worldCoordinates = np.array([10, 15, -5])
+        cameraPosition = [10, 15, 5]
+        cameraDirection = [0, 0, -1]
+        worldCoordinates = [10, 15, -5]
 
         camera = Camera(cameraPosition, cameraDirection)
-        cameraCoordinates = camera.perspectiveProject(worldCoordinates)
+        screenCoordinates = camera.perspectiveProject(worldCoordinates)
 
-        self.assertEqual(320, cameraCoordinates[0])
-        self.assertEqual(240, cameraCoordinates[1])
+        np.testing.assert_almost_equal([320, 240], screenCoordinates)
 
     def test_camera_space(self):
         """ 
