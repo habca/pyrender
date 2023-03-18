@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 
+from canvas import Canvas
 from camera import Camera
 from cube import Cube
 import vector
@@ -8,8 +9,6 @@ import vector
 class Application:
     def __init__(self):
         pygame.init()
-        self.width = 640
-        self.height = 480
         self.eulerAngle = [0,0,0]
 
         self.screen = pygame.display.set_mode((640, 480))
@@ -17,6 +16,7 @@ class Application:
         self.font = pygame.font.SysFont("Arial", 14)
 
         self.camera = Camera([0, 0, 5], [0, 0, -1])
+        self.canvas = Canvas(self.camera, 640, 480)
         self.cube = Cube((0, 0, 0), (2, 2, 2))
 
     def run(self):
@@ -33,7 +33,7 @@ class Application:
     def render(self, time: int):
         self.screen.fill((255, 255, 255))
 
-        angle = np.array([0,0.5,0])
+        angle = np.array([0.5,0,0])
         self.eulerAngle += angle
 
         vertices = self.cube.get_vertices()
@@ -53,11 +53,18 @@ class Application:
             v1 = vector.rotate(v1, self.cube.centerPosition, self.eulerAngle)
             v2 = vector.rotate(v2, self.cube.centerPosition, self.eulerAngle)
 
-            px0 = self.camera.perspectiveProject(v0)
-            px1 = self.camera.perspectiveProject(v1)
-            px2 = self.camera.perspectiveProject(v2)
+            # self.camera.cameraPosition[2] += 0.1
+
+            px0 = self.canvas.perspectiveProject(v0)
+            px1 = self.canvas.perspectiveProject(v1)
+            px2 = self.canvas.perspectiveProject(v2)
+
+            color = pygame.Color(255, 0, 0)
+            normal = vector.normal(v0, v1, v2)
+            if self.camera.visibleSurface(v0, normal):
+                color = pygame.Color(0, 0, 0)
             
-            pygame.draw.polygon(self.screen, (0, 0, 0), (px0, px1, px2), 1)
+            pygame.draw.polygon(self.screen, color, (px0, px1, px2), 2)
 
 if __name__ == "__main__":
     Application().run()

@@ -2,6 +2,7 @@ import unittest
 import numpy as np
 
 from camera import Camera
+from canvas import Canvas
 
 class CameraTest(unittest.TestCase):
     def test_perspective_project_origin(self):
@@ -10,7 +11,8 @@ class CameraTest(unittest.TestCase):
         worldCoordinates = [0,0,0]
         
         camera = Camera(cameraPosition, cameraDirection)
-        screenCoordinates = camera.perspectiveProject(worldCoordinates)
+        canvas = Canvas(camera, 640, 480)
+        screenCoordinates = canvas.perspectiveProject(worldCoordinates)
 
         self.assertTrue(np.array_equal([320,240], screenCoordinates))
 
@@ -24,7 +26,8 @@ class CameraTest(unittest.TestCase):
         worldCoordinates = [10, 15, -5]
 
         camera = Camera(cameraPosition, cameraDirection)
-        screenCoordinates = camera.perspectiveProject(worldCoordinates)
+        canvas = Canvas(camera, 640, 480)
+        screenCoordinates = canvas.perspectiveProject(worldCoordinates)
 
         np.testing.assert_almost_equal([320, 240], screenCoordinates)
 
@@ -38,7 +41,8 @@ class CameraTest(unittest.TestCase):
         worldCoordinates = np.array([1, 2, 3])
 
         camera = Camera(cameraPosition, cameraDirection)
-        cameraCoordinates = camera.cameraSpace(worldCoordinates)
+        canvas = Canvas(camera, 640, 480)
+        cameraCoordinates = canvas.cameraSpace(worldCoordinates)
 
         self.assertEqual(0, cameraCoordinates[0])
         self.assertEqual(0, cameraCoordinates[1])
@@ -52,8 +56,10 @@ class CameraTest(unittest.TestCase):
         worldCoordinates = np.array([1, 2, 0])
 
         camera = Camera(cameraPosition, cameraDirection)
-        cameraCoordinates = camera.cameraSpace(worldCoordinates)
-        screenCoordinates = camera.screenSpace(cameraCoordinates)
+        canvas = Canvas(camera, 640, 480)
+
+        cameraCoordinates = canvas.cameraSpace(worldCoordinates)
+        screenCoordinates = canvas.screenSpace(cameraCoordinates)
 
         self.assertEqual(1, screenCoordinates[0])
         self.assertEqual(2, screenCoordinates[1])
