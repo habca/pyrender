@@ -2,6 +2,7 @@ import math
 import numpy as np
 
 from camera import Camera
+import vector
 
 class Canvas: 
     def __init__(self, camera: Camera, pixelWidth: int, pixelHeight: int):
@@ -52,9 +53,3 @@ class Canvas:
         rasterCoordinateX = math.floor(normalCoordinates[0] * pixelWidth)
         rasterCoordinateY = math.floor((1 - normalCoordinates[1]) * pixelHeight)
         return np.array([rasterCoordinateX, rasterCoordinateY])
-
-    def visibleSurface(self, point: np.ndarray, normal: np.ndarray) -> bool:
-        """
-        The surface is visible when the distance to the camera is positive.
-        """
-        return np.dot(normal, np.subtract(point, self.camera.cameraPosition)) > 0

@@ -15,7 +15,7 @@ class Application:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Arial", 14)
 
-        self.camera = Camera([0, 0, 5], [0, 0, -1])
+        self.camera = Camera([0, 0, 3], [0, 0, -1])
         self.canvas = Canvas(self.camera, 640, 480)
         self.cube = Cube((0, 0, 0), (2, 2, 2))
 
@@ -33,7 +33,7 @@ class Application:
     def render(self, time: int):
         self.screen.fill((255, 255, 255))
 
-        angle = np.array([0.5,0,0])
+        angle = np.array([0,0.5,0])
         self.eulerAngle += angle
 
         vertices = self.cube.get_vertices()
@@ -49,19 +49,21 @@ class Application:
             v1 = vertices[triangles[i * 3 + 1]]
             v2 = vertices[triangles[i * 3 + 2]]
             
-            v0 = vector.rotate(v0, self.cube.centerPosition, self.eulerAngle)
-            v1 = vector.rotate(v1, self.cube.centerPosition, self.eulerAngle)
-            v2 = vector.rotate(v2, self.cube.centerPosition, self.eulerAngle)
+            # v0 = vector.rotate(v0, self.cube.centerPosition, self.eulerAngle)
+            # v1 = vector.rotate(v1, self.cube.centerPosition, self.eulerAngle)
+            # v2 = vector.rotate(v2, self.cube.centerPosition, self.eulerAngle)
 
-            # self.camera.cameraPosition[2] += 0.1
+            angle = np.array([0,0.1,0])
+            self.camera.cameraPosition = vector.rotate(self.camera.cameraPosition, self.cube.centerPosition, angle)
+            self.camera.cameraDirection = vector.normalize(np.subtract(self.cube.centerPosition, self.camera.cameraPosition))
 
-            px0 = self.canvas.perspectiveProject(v0)
-            px1 = self.canvas.perspectiveProject(v1)
-            px2 = self.canvas.perspectiveProject(v2)
+            (_, _, px0) = self.camera.projection(v0)
+            (_, _, px1) = self.camera.projection(v1)
+            (_, _, px2) = self.camera.projection(v2)
 
             color = pygame.Color(255, 0, 0)
             normal = vector.normal(v0, v1, v2)
-            if self.camera.visibleSurface(v0, normal):
+            if self.camera.visible_surface(v0, normal):
                 color = pygame.Color(0, 0, 0)
             
             pygame.draw.polygon(self.screen, color, (px0, px1, px2), 2)

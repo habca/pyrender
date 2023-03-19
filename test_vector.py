@@ -7,11 +7,40 @@ import vector
 @ddt
 class VectorTest(unittest.TestCase):
     def test_normal(self):
-        z_axis = vector.normal([0,0,0], [1,0,0], [0,1,0])
-        z_axis_neg = vector.normal([0,0,0], [0,1,0], [1,0,0])
+        v0 = [0,0,0]
+        v1 = [1,0,0]
+        v2 = [0,1,0]
+        v3 = [1,1,0]
 
-        np.testing.assert_almost_equal([0,0,1], z_axis)
-        np.testing.assert_almost_equal([0,0,-1], z_axis_neg)
+        normal = vector.normal(v0, v1, v2)
+        reversed = vector.normal(v0, v2, v1)
+
+        np.testing.assert_almost_equal([0,0,1], normal)
+        np.testing.assert_almost_equal([0,0,-1], reversed)
+
+        normal = vector.normal(v3, v2, v1)
+        reversed = vector.normal(v3, v1, v2)
+
+        np.testing.assert_almost_equal([0,0,1], normal)
+        np.testing.assert_almost_equal([0,0,-1], reversed)
+
+    def test_normal_reversed(self):
+        v0 = [0,0,0]
+        v1 = [0,1,0]
+        v2 = [1,0,0]
+        v3 = [1,1,0]
+    
+        reversed = vector.normal(v0, v1, v2)
+        normal = vector.normal(v0, v2, v1)
+
+        np.testing.assert_almost_equal([0,0,1], normal)
+        np.testing.assert_almost_equal([0,0,-1], reversed)
+
+        reversed = vector.normal(v3, v2, v1)
+        normal = vector.normal(v3, v1, v2)
+
+        np.testing.assert_almost_equal([0,0,1], normal)
+        np.testing.assert_almost_equal([0,0,-1], reversed)
 
     def test_rotate_y(self):
         x_axis = [1,0,0]
@@ -63,18 +92,22 @@ class VectorTest(unittest.TestCase):
         (1, 0, 1, True),
         (0, 1, 1, True),
         (1, 1, 1, True),
+
         (0.0001, 0.0001, 1, True),
         (0.9999, 0.0001, 1, True),
         (0.0001, 0.9999, 1, True),
         (0.9999, 0.9999, 1, True),
+
         (-0.0001, -0.0001, 1, False),
         (1.0001, -0.0001, 1, False),
         (-0.0001, 1.0001, 1, False),
         (1.0001, 1.0001, 1, False),
+
         (0, 0, -1, False),
         (1, 0, -1, False),
         (0, 1, -1, False),
         (1, 1, -1, False),
+
         (0.0001, 0.0001, -1, False),
         (0.9999, 0.0001, -1, False),
         (0.0001, 0.9999, -1, False),
@@ -111,18 +144,22 @@ class VectorTest(unittest.TestCase):
         (1, 0, 1, True),
         (0, 1, 1, True),
         (0.5, 0.5, 1, True),
+
         (0.0001, 0.0001, 1, True),
         (0.9999, 0.0001, 1, True),
         (0.0001, 0.9999, 1, True),
         (0.4999, 0.4999, 1, True),
+
         (-0.0001, -0.0001, 1, False),
         (1.0001, -0.0001, 1, False),
         (-0.0001, 0.0001, 1, False),
         (5.0001, 5.0001, 1, False),
+
         (0, 0, -1, False),
         (1, 0, -1, False),
         (0, 1, -1, False),
         (0.5, 0.5, -1, False),
+
         (0.0001, 0.0001, -1, False),
         (0.9999, 0.0001, -1, False),
         (0.0001, 0.9999, -1, False),
