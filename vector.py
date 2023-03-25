@@ -52,6 +52,44 @@ def rotate_z(direction: np.ndarray, degrees: float) -> np.ndarray:
         direction[2]
     ])
 
+def project_to_plane(
+        ray_origin: np.ndarray,
+        ray_direction: np.ndarray,
+        plane_origin: np.ndarray,
+        plane_normal: np.ndarray
+    ) -> tuple[bool, float, np.ndarray]:
+
+    line = np.subtract(plane_origin, ray_origin)
+    scale = np.dot(ray_direction, plane_normal)
+
+    EPSILON = 1e-6
+
+    # DivideByZeroError.
+    if -EPSILON < scale < EPSILON:
+        return (False, 0, np.array([]))
+
+    hitDistance = np.dot(line, plane_normal) / scale
+    hitPoint = ray_origin + hitDistance * ray_direction
+
+    return (True, hitDistance, hitPoint)
+
+def intersect_plane(
+        ray_origin: np.ndarray,
+        ray_direction: np.ndarray,
+        plane_origin: np.ndarray,
+        plane_normal: np.ndarray
+    ) -> tuple[bool, float, np.ndarray]:
+
+    (hit, hitDistance, hitPoint) = project_to_plane(
+        ray_origin, ray_direction, plane_origin, plane_normal)
+
+    if not hit: return (hit, hitDistance, hitPoint)
+
+    hit = hit and np.dot(ray_direction, plane_normal) < 0
+    hit = hit and hitDistance > 0
+
+    return (hit, hitDistance, hitPoint)
+
 def intersect_quad(
         ray_origin: np.ndarray,
         ray_direction: np.ndarray,
@@ -111,3 +149,54 @@ def intersect_triangle(
     hitDistance = inverseDeterminant * np.dot(Q, edge2)
     hitPoint = ray_origin + hitDistance * ray_direction
     return (hit, hitDistance, hitPoint)
+
+def point_in_quad(
+        point: np.ndarray,
+        v0: np.ndarray,
+        v1: np.ndarray,
+        v2: np.ndarray,
+        v3: np.ndarray
+    ) -> tuple[bool, np.ndarray]:
+
+    (result, normal) = point_in_triangle(point, v0, v1, v2)
+    if result: return (result, normal)
+    
+    (result, normal) = point_in_triangle(point, v3, v2, v1)
+    if result: return (result, normal)
+    
+    return (False, normal)
+
+def point_in_triangle(
+        point: np.ndarray,
+        v0: np.ndarray,
+        v1: np.ndarray,
+        v2: np.ndarray
+    ) -> tuple[bool, np.ndarray]:
+
+    e1 = np.subtract(v1, v0)
+    e2 = np.subtract(v2, v0)
+
+    normal = np.cross(e1, e2)
+    normal = normalize(normal)
+
+    EPSILON = 1e-6
+
+    e1 = np.subtract(v1, v0)
+    e2 = np.subtract(point, v0)
+    n0 = np.cross(e1, e2)
+    if np.dot(normal, n0) < -EPSILON:
+        return (False, normal)
+
+    e1 = np.subtract(v2, v1)
+    e2 = np.subtract(point, v1)
+    n1 = np.cross(e1, e2)
+    if np.dot(normal, n1) < -EPSILON:
+        return (False, normal)
+    
+    e1 = np.subtract(v0, v2)
+    e2 = np.subtract(point, v2)
+    n2 = np.cross(e1, e2)
+    if np.dot(normal, n2) < -EPSILON:
+        return (False, normal)
+    
+    return (True, normal)
