@@ -10,7 +10,7 @@ class CameraTest(unittest.TestCase):
         cameraDirection = [0,0,-1]
         worldCoordinates = [0,0,0]
         
-        camera = Camera(cameraPosition, cameraDirection)
+        camera = Camera(cameraPosition)
         canvas = Canvas(camera, 640, 480)
         screenCoordinates = canvas.perspectiveProject(worldCoordinates)
 
@@ -22,10 +22,9 @@ class CameraTest(unittest.TestCase):
         the 2D vector should be in the centre of the image.
         """
         cameraPosition = [10, 15, 5]
-        cameraDirection = [0, 0, -1]
         worldCoordinates = [10, 15, -5]
 
-        camera = Camera(cameraPosition, cameraDirection)
+        camera = Camera(cameraPosition)
         canvas = Canvas(camera, 640, 480)
         screenCoordinates = canvas.perspectiveProject(worldCoordinates)
 
@@ -40,7 +39,7 @@ class CameraTest(unittest.TestCase):
         cameraDirection = np.array([0, 0, 0])
         worldCoordinates = np.array([1, 2, 3])
 
-        camera = Camera(cameraPosition, cameraDirection)
+        camera = Camera(cameraPosition)
         canvas = Canvas(camera, 640, 480)
         cameraCoordinates = canvas.cameraSpace(worldCoordinates)
 
@@ -55,7 +54,7 @@ class CameraTest(unittest.TestCase):
         cameraDirection = np.array([0, 0, 0])
         worldCoordinates = np.array([1, 2, 0])
 
-        camera = Camera(cameraPosition, cameraDirection)
+        camera = Camera(cameraPosition)
         canvas = Canvas(camera, 640, 480)
 
         cameraCoordinates = canvas.cameraSpace(worldCoordinates)

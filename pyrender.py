@@ -4,18 +4,19 @@ import numpy as np
 from canvas import Canvas
 from camera import Camera
 from cube import Cube
+from controller import Controller
 import vector
 
 class Application:
     def __init__(self):
         pygame.init()
-        self.eulerAngle = [0,0,0]
 
         self.screen = pygame.display.set_mode((640, 480))
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Arial", 14)
 
-        self.camera = Camera([0, 0, 3], [0, 0, -1])
+        self.controller = Controller()
+        self.camera = Camera([0, 0, 3])
         self.canvas = Canvas(self.camera, 640, 480)
         self.cube = Cube((0, 0, 0), (2, 2, 2))
 
@@ -29,15 +30,21 @@ class Application:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                self.controller.mouse_button_down(pygame.mouse.get_pos())
+            if event.type == pygame.MOUSEBUTTONUP:
+                self.controller.mouse_button_up()
+            if event.type == pygame.MOUSEMOTION:
+                self.controller.mouse_motion(pygame.mouse.get_pos(), time)
 
     def render(self, time: int):
         self.screen.fill((255, 255, 255))
 
-        angle = np.array([0,0.5,0])
-        self.eulerAngle += angle
-
         vertices = self.cube.get_vertices()
         triangles = self.cube.get_triangles()
+        
+        (rx, ry) = self.controller.get_frame_update()
+        self.camera.rotate_orbit(rx, ry)
         self.draw_triangles(vertices, triangles)
 
         pygame.display.flip()
@@ -48,14 +55,6 @@ class Application:
             v0 = vertices[triangles[i * 3 + 0]]
             v1 = vertices[triangles[i * 3 + 1]]
             v2 = vertices[triangles[i * 3 + 2]]
-            
-            # v0 = vector.rotate(v0, self.cube.centerPosition, self.eulerAngle)
-            # v1 = vector.rotate(v1, self.cube.centerPosition, self.eulerAngle)
-            # v2 = vector.rotate(v2, self.cube.centerPosition, self.eulerAngle)
-
-            angle = np.array([0,0.1,0])
-            self.camera.cameraPosition = vector.rotate(self.camera.cameraPosition, self.cube.centerPosition, angle)
-            self.camera.cameraDirection = vector.normalize(np.subtract(self.cube.centerPosition, self.camera.cameraPosition))
 
             (_, _, px0) = self.camera.projection(v0)
             (_, _, px1) = self.camera.projection(v1)

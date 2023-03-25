@@ -4,23 +4,42 @@ import numpy as np
 import vector
 
 class Camera:
-    def __init__(self, cameraPosition: np.ndarray, cameraDirection: np.ndarray):
+    def __init__(self, cameraPosition: np.ndarray):
         self.cameraPosition = cameraPosition
-        self.cameraDirection = cameraDirection
+        self.orbitTarget = np.array([0,0,0])
+        self.upDirection = np.array([0,1,0])
+        self.look_at(self.cameraPosition, self.orbitTarget)
 
-    def dimensions(self) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        forward = np.array(self.cameraDirection)
-        up = np.array([0,1,0])
-        right = np.cross(forward, up)
+    def look_at(self, look_from: np.ndarray, look_to: np.ndarray) -> None:
+        self.cameraPosition = look_from
+        self.orbitTarget = look_to
+        self.cameraDirection = self.orbitTarget - self.cameraPosition
+        self.cameraDirection = vector.normalize(self.cameraDirection)
+
+    def right_direction(self) -> np.ndarray:
+        right = np.cross(self.cameraDirection, self.upDirection)
         right = vector.normalize(right)
-        up = np.cross(right, forward)
-        up = vector.normalize(up)
-        center = np.add(self.cameraPosition, forward)
+        return right
 
-        return (forward, right, up, center)
-    
-    def boundaries(self) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        (forward, right, up, center) = self.dimensions()
+    def up_direction(self) -> np.ndarray:
+        up = np.cross(self.right_direction(), self.cameraDirection)
+        up = vector.normalize(up)
+        return up
+
+    def rotate_orbit(self, angle_x: float, angle_y: float) -> None:
+        line_segment = self.orbitTarget - self.cameraPosition
+        line_segment = vector.rotate_x(line_segment, angle_x)
+        line_segment = vector.rotate_y(line_segment, angle_y)
+        self.cameraPosition = self.orbitTarget - line_segment
+        self.cameraDirection = vector.normalize(line_segment)
+
+    def screen_center(self) -> np.ndarray:
+        return self.cameraPosition + self.cameraDirection
+
+    def screen_corner(self) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+        center = self.screen_center()
+        right = self.right_direction()
+        up = self.up_direction()
 
         v0 = center - right - up
         v1 = center + right - up
@@ -36,8 +55,7 @@ class Camera:
         ray_direction = np.subtract(self.cameraPosition, worldPosition)
         ray_direction = vector.normalize(ray_direction)
 
-        (forward, right, up, center) = self.dimensions()
-        (v0, v1, v2, v3) = self.boundaries()
+        (v0, v1, v2, v3) = self.screen_corner()
 
         # Reverse triangle vertices for ray casting because
         # otherwise triangle normals point towards the camera.
@@ -47,6 +65,10 @@ class Camera:
 
         # There is neither intersection nor distance.
         if not hit: return (hit, hitDistance, hitPoint)
+
+        center = self.screen_center()
+        right = self.right_direction()
+        up = self.up_direction()
 
         # Forward vector should zero out on projection.
         normalized = np.subtract(hitPoint, center)

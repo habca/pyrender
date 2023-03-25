@@ -33,7 +33,7 @@ class CameraTest(unittest.TestCase):
         cameraDirection = np.array([0,0,-1])
         worldPoint = np.array([x, y, z])
 
-        camera = Camera(cameraPosition, cameraDirection)
+        camera = Camera(cameraPosition)
         (hit, _, _) = camera.projection(worldPoint)
         
         self.assertEqual(expected, hit)
