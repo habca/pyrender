@@ -52,6 +52,19 @@ def rotate_z(direction: np.ndarray, degrees: float) -> np.ndarray:
         direction[2]
     ])
 
+def rotate_axis_angle(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+    axis = np.cross(v1, v2)
+    axis = normalize(axis)
+
+    m1 = np.array([v1, axis, np.cross(axis, v1)])
+    m1 = np.transpose(m1)
+
+    m2 = np.array([v2, axis, np.cross(axis, v2)])
+    m2 = np.transpose(m2)
+    
+    m1 = np.linalg.inv(m1)
+    return np.dot(m2, m1)
+
 def project_to_plane(
         ray_origin: np.ndarray,
         ray_direction: np.ndarray,

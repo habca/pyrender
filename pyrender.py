@@ -15,7 +15,7 @@ class Application:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Arial", 14)
 
-        self.controller = Controller()
+        self.controller = Controller(0.05)
         self.camera = Camera([0, 0, 3])
         self.canvas = Canvas(self.camera, 640, 480)
         self.cube = Cube((0, 0, 0), (2, 2, 2))
@@ -40,11 +40,13 @@ class Application:
     def render(self, time: int):
         self.screen.fill((255, 255, 255))
 
-        vertices = self.cube.get_vertices()
-        triangles = self.cube.get_triangles()
-        
+        # Update camera
         (rx, ry) = self.controller.get_frame_update()
         self.camera.rotate_orbit(rx, ry)
+
+        # Update screen
+        vertices = self.cube.get_vertices()
+        triangles = self.cube.get_triangles()
         self.draw_triangles(vertices, triangles)
 
         pygame.display.flip()

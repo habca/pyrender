@@ -1,6 +1,6 @@
 class Controller:
-    def __init__(self):
-        self.mouse_sensitivity = 0.05
+    def __init__(self, sensitivity: float):
+        self.mouse_sensitivity = sensitivity
         self.mouse_selection = False
         self.mouse_position = (0, 0)
 
@@ -10,7 +10,7 @@ class Controller:
     def get_frame_update(self) -> tuple[float, float]:
         movement = self.mouse_movement
         self.mouse_movement = [0.0, 0.0]
-        return movement
+        return (movement[0], movement[1])
 
     def mouse_button_down(self, screen_position: tuple[int, int]) -> None:
         self.mouse_selection = True
