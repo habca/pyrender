@@ -141,6 +141,14 @@ class RotateAxisTest(unittest.TestCase):
         np.testing.assert_almost_equal(v1, vector.rotate_y(v1, 0))
         np.testing.assert_almost_equal(v1, vector.rotate_z(v1, 0))
 
+    def test_rotation_matrix(self):
+        v, axis, theta = [3,5,0], [4,4,1], 1.2
+
+        rotation = np.dot(vector.rotation_matrix(axis, theta), v)
+        expected = [2.74911638, 4.77180932, 1.91629719]
+
+        np.testing.assert_almost_equal(expected, rotation)
+
 @ddt
 class ProjectToTest(unittest.TestCase):
     @data(

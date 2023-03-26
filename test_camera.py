@@ -37,5 +37,34 @@ class CameraTest(unittest.TestCase):
         
         self.assertEqual(expected, hit)
 
+    def test_rotate_orbit_zero_angle(self):
+        cameraPosition = np.array([0,0,3])
+        camera = Camera(cameraPosition)
+        camera.rotate_orbit(0, 0)
+
+        np.testing.assert_almost_equal([0,0,3], camera.cameraPosition)
+
+    """
+    def test_rotate_orbit_full_circle(self):
+        cameraPosition = np.array([0,0,3])
+        camera = Camera(cameraPosition)
+        camera.rotate_orbit(360, 360)
+
+        np.testing.assert_almost_equal([0,0,3], camera.cameraPosition)
+
+    def test_rotate_orbit_between_axis(self):
+        cameraPosition = np.array([0,0,3])
+        camera = Camera(cameraPosition)
+        camera.rotate_orbit(-90, 0)
+
+        np.testing.assert_almost_equal([0,3,0], camera.cameraPosition)
+
+        cameraPosition = np.array([0,0,3])
+        camera = Camera(cameraPosition)
+        camera.rotate_orbit(0, 90)
+
+        np.testing.assert_almost_equal([3,0,0], camera.cameraPosition)
+    """
+
 if __name__ == "__main__":
     unittest.main()
