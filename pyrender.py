@@ -31,9 +31,11 @@ class Application:
             if event.type == pygame.QUIT:
                 exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
-                self.controller.mouse_button_down(pygame.mouse.get_pos())
+                if pygame.mouse.get_pressed()[2]:
+                    self.controller.mouse_button_down(pygame.mouse.get_pos())
             if event.type == pygame.MOUSEBUTTONUP:
-                self.controller.mouse_button_up()
+                if not pygame.mouse.get_pressed()[2]:
+                    self.controller.mouse_button_up()
             if event.type == pygame.MOUSEMOTION:
                 self.controller.mouse_motion(pygame.mouse.get_pos(), time)
 

@@ -30,7 +30,6 @@ class CameraTest(unittest.TestCase):
     @unpack
     def test_projection(self, x: float, y: float, z: float, expected: bool):
         cameraPosition = np.array([0,0,1])
-        cameraDirection = np.array([0,0,-1])
         worldPoint = np.array([x, y, z])
 
         camera = Camera(cameraPosition)

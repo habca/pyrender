@@ -5,16 +5,29 @@ import vector
 
 class Camera:
     def __init__(self, cameraPosition: np.ndarray):
-        self.cameraPosition = cameraPosition
+        self.cameraPosition = cameraPosition      
         self.orbitTarget = np.array([0,0,0])
+
+        self.cameraDirection = np.array([0,0,-1])
         self.upDirection = np.array([0,1,0])
+        
+        # Calculate up direction.
         self.look_at(self.cameraPosition, self.orbitTarget)
 
     def look_at(self, look_from: np.ndarray, look_to: np.ndarray) -> None:
         self.cameraPosition = look_from
         self.orbitTarget = look_to
-        self.cameraDirection = self.orbitTarget - self.cameraPosition
+
+        old_direction = self.cameraDirection
+        new_direction = np.subtract(self.orbitTarget, self.cameraPosition)
+        new_direction = vector.normalize(self.cameraDirection)
+        rotation = vector.rotate_axis_angle(old_direction, new_direction)
+
+        self.cameraDirection = np.dot(rotation, self.cameraDirection)
         self.cameraDirection = vector.normalize(self.cameraDirection)
+
+        self.upDirection = np.dot(rotation, self.upDirection)
+        self.upDirection = vector.normalize(self.upDirection)
 
     def right_direction(self) -> np.ndarray:
         right = np.cross(self.cameraDirection, self.upDirection)
@@ -27,10 +40,10 @@ class Camera:
         return up
 
     def rotate_orbit(self, angle_x: float, angle_y: float) -> None:
-        line_segment = self.orbitTarget - self.cameraPosition
+        line_segment = np.subtract(self.orbitTarget, self.cameraPosition)
         line_segment = vector.rotate_x(line_segment, angle_x)
         line_segment = vector.rotate_y(line_segment, angle_y)
-        self.cameraPosition = self.orbitTarget - line_segment
+        self.cameraPosition = np.subtract(self.orbitTarget, line_segment)
         self.cameraDirection = vector.normalize(line_segment)
 
     def screen_center(self) -> np.ndarray:

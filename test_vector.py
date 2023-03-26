@@ -128,6 +128,19 @@ class RotateAxisTest(unittest.TestCase):
         np.testing.assert_almost_equal(v1, np.dot(rotation_inverse, v2))
         np.testing.assert_almost_equal(v1, vector.rotate_x(v2, -90))
 
+    def test_rotate_axis_angle_identity(self):
+        v1 = np.array([1, 0, 0])
+
+        rotation = vector.rotate_axis_angle(v1, v1)
+        rotation_inverse = vector.rotate_axis_angle(v1, v1)
+
+        np.testing.assert_almost_equal(v1, np.dot(rotation, v1))
+        np.testing.assert_almost_equal(v1, np.dot(rotation_inverse, v1))
+
+        np.testing.assert_almost_equal(v1, vector.rotate_x(v1, 0))
+        np.testing.assert_almost_equal(v1, vector.rotate_y(v1, 0))
+        np.testing.assert_almost_equal(v1, vector.rotate_z(v1, 0))
+
 @ddt
 class ProjectToTest(unittest.TestCase):
     @data(

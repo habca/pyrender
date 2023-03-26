@@ -53,6 +53,9 @@ def rotate_z(direction: np.ndarray, degrees: float) -> np.ndarray:
     ])
 
 def rotate_axis_angle(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+    if np.array_equal(v1, v2):
+        return np.identity(3)
+
     axis = np.cross(v1, v2)
     axis = normalize(axis)
 
