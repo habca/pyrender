@@ -7,8 +7,20 @@ def normal(v0: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     cross = np.cross(edge0, edge1)
     return normalize(cross)
 
+def subtract(v0: np.ndarray, v1: np.ndarray) -> np.ndarray:
+    return np.array([v0[0] - v1[0], v0[1] - v1[1], v0[2] - v1[2]])
+
+def dotProduct(v0: np.ndarray, v1: np.ndarray) -> np.ndarray:
+    return v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2]
+
 def normalize(v0: np.ndarray) -> np.ndarray:
-    return v0 / np.linalg.norm(v0)
+    len = math.sqrt(dotProduct(v0, v0))
+
+    x = v0[0] / len
+    y = v0[1] / len
+    z = v0[2] / len
+
+    return np.array([x, y, z])
 
 def rotate(v0: np.ndarray, origin: np.ndarray, degrees: np.ndarray) -> np.ndarray:
     v0 = np.add(origin, rotate_x(np.subtract(v0, origin), degrees[0]))
@@ -131,18 +143,16 @@ def intersect_quad(
     ) -> tuple[bool, float, np.ndarray]:
     
     (hit, hitDistance, hitPoint) = intersect_triangle(
-        ray_origin, ray_direction, v0, v1, v2
-    )
+        ray_origin, ray_direction, v0, v1, v2)
     
     if hit: return (hit, hitDistance, hitPoint)
     
     (hit, hitDistance, hitPoint) = intersect_triangle(
-        ray_origin, ray_direction, v3, v2, v1
-    )
+        ray_origin, ray_direction, v3, v2, v1)
     
     return (hit, hitDistance, hitPoint)
 
-def intersect_triangle(
+def intersect_triangle_moller_trumbore(
         ray_origin: np.ndarray,
         ray_direction: np.ndarray,
         v0: np.ndarray,
@@ -179,6 +189,21 @@ def intersect_triangle(
     hit = True
     hitDistance = inverseDeterminant * np.dot(Q, edge2)
     hitPoint = ray_origin + hitDistance * ray_direction
+    return (hit, hitDistance, hitPoint)
+
+def intersect_triangle(
+        ray_origin: np.ndarray,
+        ray_direction: np.ndarray,
+        v0: np.ndarray,
+        v1: np.ndarray,
+        v2: np.ndarray
+    ) -> tuple[bool, float, np.ndarray]:
+
+    (hit, hitDistance, hitPoint) = intersect_plane(
+        ray_origin, ray_direction, v0, normal(v0, v1, v2))
+    
+    if hit: (hit, _) = point_in_triangle(hitPoint, v0, v1, v2)
+    
     return (hit, hitDistance, hitPoint)
 
 def point_in_quad(

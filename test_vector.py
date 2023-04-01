@@ -300,6 +300,31 @@ class IntersectTest(unittest.TestCase):
             np.testing.assert_almost_equal([0, 0, 1], normal)
             np.testing.assert_almost_equal(abs(z), hitDistance)
 
+    def test_intersect_quad_precision(self):
+        cameraPosition = np.array([0, 0, 3.16])
+        worldPosition = np.array([-1, 1, 1])
+
+        ray_origin = np.array(worldPosition)
+        ray_direction = np.array([0.38732932, -0.38732932, 0.83663134])
+
+        v0 = np.array([-1, -1, 2.16])
+        v1 = np.array([1, -1, 2.16])
+        v2 = np.array([-1, 1, 2.16])
+        v3 = np.array([1, 1, 2.16])
+
+        (hit, _, _) = vector.intersect_quad(
+            ray_origin, ray_direction, v0, v2, v1, v3)
+        
+        self.assertTrue(hit)
+
+        ray_direction = vector.subtract(cameraPosition, worldPosition)
+        ray_direction = vector.normalize(ray_direction)
+
+        (hit, _, _) = vector.intersect_quad(
+            ray_origin, ray_direction, v0, v2, v1, v3)
+        
+        self.assertTrue(hit)
+
     @data(
         (0, 0, 1, True),
         (1, 0, 1, True),

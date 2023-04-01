@@ -7,33 +7,42 @@ from camera import Camera
 @ddt
 class CameraTest(unittest.TestCase):
     @data(
-        (-1, -1, 0.0001, False),
-        (1, -1, 0.0001, False),
-        (-1, 1, 0.0001, False),
-        (1, 1, 0.0001, False),
+        ([0,0,1], [-1, -1, 0.0001], False),
+        ([0,0,1], [1, -1, 0.0001], False),
+        ([0,0,1], [-1, 1, 0.0001], False),
+        ([0,0,1], [1, 1, 0.0001], False),
 
-        (-1, -1, 0, True),
-        (1, -1, 0, True),
-        (-1, 1, 0, True),
-        (1, 1, 0, True),
+        ([0,0,1], [-1, -1, 0], False),
+        ([0,0,1], [1, -1, 0], False),
+        ([0,0,1], [-1, 1, 0], False),
+        ([0,0,1], [1, 1, 0], False),
 
-        (-1.0001, -1.0001, 0, False),
-        (1.0001, -1.0001, 0, False),
-        (-1.0001, 1.0001, 0, False),
-        (1.0001, 1.0001, 0, False),
+        ([0,0,1], [-1.0001, -1.0001, 0], False),
+        ([0,0,1], [1.0001, -1.0001, 0], False),
+        ([0,0,1], [-1.0001, 1.0001, 0], False),
+        ([0,0,1], [1.0001, 1.0001, 0], False),
 
-        (-1.0001, -1.0001, -0.0001, True),
-        (1.0001, -1.0001, -0.0001, True),
-        (-1.0001, 1.0001, -0.0001, True),
-        (1.0001, 1.0001, -0.0001, True),
+        ([0,0,1], [-1.0001, -1.0001, -0.0001], True),
+        ([0,0,1], [1.0001, -1.0001, -0.0001], True),
+        ([0,0,1], [-1.0001, 1.0001, -0.0001], True),
+        ([0,0,1], [1.0001, 1.0001, -0.0001], True),
+
+        ([0,0,1], [-1, -1, -0.0001], True),
+        ([0,0,1], [1, -1, -0.0001], True),
+        ([0,0,1], [-1, 1, -0.0001], True),
+        ([0,0,1], [1, 1, -0.0001], True),
+
+        ([0, 0, 3.16], [-1, -1, 1], True),
+        ([0, 0, 3.16], [-1, 1, 1], True),
+        ([0, 0, 3.16], [1, -1, 1], True),
     )
     @unpack
-    def test_projection(self, x: float, y: float, z: float, expected: bool):
-        cameraPosition = np.array([0,0,1])
-        worldPoint = np.array([x, y, z])
+    def test_projection(self, cameraPosition: np.ndarray, worldPosition: np.ndarray, expected: bool):
+        cameraPosition = np.array(cameraPosition)
+        worldPosition = np.array(worldPosition)
 
         camera = Camera(cameraPosition)
-        (hit, _, _) = camera.projection(worldPoint)
+        (hit, _, _) = camera.projection(worldPosition)
         
         self.assertEqual(expected, hit)
 

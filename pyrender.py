@@ -15,7 +15,7 @@ class Application:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Arial", 14)
 
-        self.controller = Controller(0.001)
+        self.controller = Controller(0.001, 0.01)
         self.camera = Camera([0, 0, 3])
         self.canvas = Canvas(self.camera, 640, 480)
         self.cube = Cube((0, 0, 0), (2, 2, 2))
@@ -38,13 +38,16 @@ class Application:
                     self.controller.mouse_button_up()
             if event.type == pygame.MOUSEMOTION:
                 self.controller.mouse_motion(pygame.mouse.get_pos(), time)
+            if event.type == pygame.MOUSEWHEEL:
+                self.controller.mouse_wheel(event.y, time)
 
     def render(self, time: int):
         self.screen.fill((255, 255, 255))
 
         # Update camera
-        (rx, ry) = self.controller.get_frame_update()
+        (rx, ry, sz) = self.controller.get_frame_update()
         self.camera.rotate_orbit(rx, ry)
+        self.camera.scale_orbit(sz)
 
         # Update screen
         vertices = self.cube.get_vertices()
@@ -60,16 +63,18 @@ class Application:
             v1 = vertices[triangles[i * 3 + 1]]
             v2 = vertices[triangles[i * 3 + 2]]
 
-            (_, _, px0) = self.camera.projection(v0)
-            (_, _, px1) = self.camera.projection(v1)
-            (_, _, px2) = self.camera.projection(v2)
+            (hit0, _, px0) = self.camera.projection(v0)
+            (hit1, _, px1) = self.camera.projection(v1)
+            (hit2, _, px2) = self.camera.projection(v2)
 
             color = pygame.Color(255, 0, 0)
             normal = vector.normal(v0, v1, v2)
+            
             if self.camera.visible_surface(v0, normal):
                 color = pygame.Color(0, 0, 0)
             
-            pygame.draw.polygon(self.screen, color, (px0, px1, px2), 2)
+            if hit0 and hit1 and hit2:
+                pygame.draw.polygon(self.screen, color, (px0, px1, px2), 2)
 
 if __name__ == "__main__":
     Application().run()

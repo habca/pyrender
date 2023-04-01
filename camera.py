@@ -52,6 +52,10 @@ class Camera:
         new_position = line_segment + self.orbitTarget
         self.look_at(new_position, self.orbitTarget)
 
+    def scale_orbit(self, zoom_z: float) -> None:
+        new_position = self.cameraPosition + zoom_z * self.cameraDirection
+        self.look_at(new_position, self.orbitTarget)
+
     def screen_center(self) -> np.ndarray:
         return self.cameraPosition + self.cameraDirection
 
@@ -71,7 +75,7 @@ class Camera:
         ) -> tuple[bool, float, np.ndarray]:
         
         ray_origin = np.array(worldPosition)
-        ray_direction = np.subtract(self.cameraPosition, worldPosition)
+        ray_direction = vector.subtract(self.cameraPosition, worldPosition)
         ray_direction = vector.normalize(ray_direction)
 
         (v0, v1, v2, v3) = self.screen_corner()
@@ -79,8 +83,7 @@ class Camera:
         # Reverse triangle vertices for ray casting because
         # otherwise triangle normals point towards the camera.
         (hit, hitDistance, hitPoint) = vector.intersect_quad(
-            ray_origin, ray_direction, v0, v2, v1, v3
-        )
+            ray_origin, ray_direction, v0, v2, v1, v3)
 
         # There is neither intersection nor distance.
         if not hit: return (hit, hitDistance, hitPoint)
