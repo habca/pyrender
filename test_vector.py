@@ -137,6 +137,64 @@ class RotateAxisTest(unittest.TestCase):
         np.testing.assert_almost_equal([0,-1,0], rotate_270)
         np.testing.assert_almost_equal([1,0,0], rotate_360)
 
+class RotationVectorTest(unittest.TestCase):
+    def test_rotation_vector_xy(self):
+        v1 = np.array([1, 0, 0])
+        v2 = np.array([0, 1, 0])
+
+        np.testing.assert_almost_equal(v2, vector.rotation_vector(v1, v1, v2))
+        np.testing.assert_almost_equal(v1, vector.rotation_vector(v2, v2, v1))
+
+        np.testing.assert_almost_equal(v2, vector.rotate_z(v1, 90))
+        np.testing.assert_almost_equal(v1, vector.rotate_z(v2, -90))
+        
+        np.testing.assert_almost_equal(vector.rotate_z(v1, 90), vector.rotation_vector(v1, v1, v2))
+        np.testing.assert_almost_equal(vector.rotate_z(v2, 90), vector.rotation_vector(v2, v1, v2))
+
+        np.testing.assert_almost_equal(vector.rotate_z(v1, -90), vector.rotation_vector(v1, v2, v1))
+        np.testing.assert_almost_equal(vector.rotate_z(v2, -90), vector.rotation_vector(v2, v2, v1))
+
+    def test_rotation_vector_xz(self):
+        v1 = np.array([1, 0, 0])
+        v2 = np.array([0, 0, 1])
+
+        np.testing.assert_almost_equal(v2, vector.rotation_vector(v1, v1, v2))
+        np.testing.assert_almost_equal(v1, vector.rotation_vector(v2, v2, v1))
+
+        np.testing.assert_almost_equal(v2, vector.rotate_y(v1, -90))
+        np.testing.assert_almost_equal(v1, vector.rotate_y(v2, 90))
+
+        np.testing.assert_almost_equal(vector.rotate_y(v1, -90), vector.rotation_vector(v1, v1, v2))
+        np.testing.assert_almost_equal(vector.rotate_y(v2, -90), vector.rotation_vector(v2, v1, v2))
+
+        np.testing.assert_almost_equal(vector.rotate_y(v1, 90), vector.rotation_vector(v1, v2, v1))
+        np.testing.assert_almost_equal(vector.rotate_y(v2, 90), vector.rotation_vector(v2, v2, v1))
+
+    def test_rotation_vector_yz(self):
+        v1 = np.array([0, 1, 0])
+        v2 = np.array([0, 0, 1])
+
+        np.testing.assert_almost_equal(v2, vector.rotation_vector(v1, v1, v2))
+        np.testing.assert_almost_equal(v1, vector.rotation_vector(v2, v2, v1))
+
+        np.testing.assert_almost_equal(v2, vector.rotate_x(v1, 90))
+        np.testing.assert_almost_equal(v1, vector.rotate_x(v2, -90))
+
+        np.testing.assert_almost_equal(vector.rotate_x(v1, 90), vector.rotation_vector(v1, v1, v2))
+        np.testing.assert_almost_equal(vector.rotate_x(v2, 90), vector.rotation_vector(v2, v1, v2))
+
+        np.testing.assert_almost_equal(vector.rotate_x(v1, -90), vector.rotation_vector(v1, v2, v1))
+        np.testing.assert_almost_equal(vector.rotate_x(v2, -90), vector.rotation_vector(v2, v2, v1))
+
+    def test_rotation_vector_identity(self):
+        v1 = np.array([1, 0, 0])
+
+        np.testing.assert_almost_equal(v1, vector.rotation_vector(v1, v1, v1))
+
+        np.testing.assert_almost_equal(v1, vector.rotate_x(v1, 0))
+        np.testing.assert_almost_equal(v1, vector.rotate_y(v1, 0))
+        np.testing.assert_almost_equal(v1, vector.rotate_z(v1, 0))
+
 class RotateAxisAngleTest(unittest.TestCase):
     def test_rotate_axis_angle_xy(self):
         v1 = np.array([1, 0, 0])

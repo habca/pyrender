@@ -11,7 +11,6 @@ class Camera:
         self.cameraDirection = np.array([0,0,-1])
         self.upDirection = np.array([0,1,0])
         
-        # Calculate up direction.
         self.look_at(self.cameraPosition, self.orbitTarget)
 
     def look_at(self, look_from: np.ndarray, look_to: np.ndarray) -> None:

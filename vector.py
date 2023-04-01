@@ -1,6 +1,19 @@
 import numpy as np
 import math
 
+EPSILON = 1e-6
+RADIANS = math.pi / 180
+DEGREES = 180 / math.pi
+
+def angle(v0: np.ndarray, v1: np.ndarray) -> float:
+    """Radians.
+    
+    :param v0: A list of float numbers [x, y, z].
+    :param v1: A list of float numbers [x, y, z].
+    :returns: Angle between v0 and v1 in radians.
+    """
+    return math.acos(dotProduct(v0, v1))
+
 def normal(v0: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     edge0 = subtract(v1, v0)
     edge1 = subtract(v2, v0)
@@ -20,14 +33,12 @@ def crossProduct(v0: np.ndarray, v1: np.ndarray) -> np.ndarray:
         v0[0] * v1[1] - v0[1] * v1[0]
     ])
 
+def length(v0: np.ndarray) -> float:
+    return math.sqrt(dotProduct(v0, v0))
+
 def normalize(v0: np.ndarray) -> np.ndarray:
-    len = math.sqrt(dotProduct(v0, v0))
-
-    x = v0[0] / len
-    y = v0[1] / len
-    z = v0[2] / len
-
-    return np.array([x, y, z])
+    len = length(v0)
+    return np.array([v0[0] / len, v0[1] / len, v0[2] / len])
 
 def rotate(v0: np.ndarray, origin: np.ndarray, degrees: np.ndarray) -> np.ndarray:
     v0 = np.add(origin, rotate_x(subtract(v0, origin), degrees[0]))
@@ -35,14 +46,8 @@ def rotate(v0: np.ndarray, origin: np.ndarray, degrees: np.ndarray) -> np.ndarra
     v0 = np.add(origin, rotate_z(subtract(v0, origin), degrees[2]))
     return v0
 
-def radian(degree: float) -> float:
-    return degree * (math.pi / 180)
-
-def degree(radian: float) -> float:
-    return radian * (180 / math.pi)
-
 def rotate_x(direction: np.ndarray, degrees: float) -> np.ndarray:
-    radians = radian(degrees)
+    radians = RADIANS * degrees
     return np.array([
         direction[0],
         direction[1] * math.cos(radians) -
@@ -52,7 +57,7 @@ def rotate_x(direction: np.ndarray, degrees: float) -> np.ndarray:
     ])
 
 def rotate_y(direction: np.ndarray, degrees: float) -> np.ndarray:
-    radians = radian(degrees)
+    radians = RADIANS * degrees
     return np.array([
         direction[0] * math.cos(radians) +
         direction[2] * math.sin(radians),
@@ -62,7 +67,7 @@ def rotate_y(direction: np.ndarray, degrees: float) -> np.ndarray:
     ])
 
 def rotate_z(direction: np.ndarray, degrees: float) -> np.ndarray:
-    radians = radian(degrees)
+    radians = RADIANS * degrees
     return np.array([
         direction[0] * math.cos(radians) -
         direction[1] * math.sin(radians),
@@ -72,33 +77,46 @@ def rotate_z(direction: np.ndarray, degrees: float) -> np.ndarray:
     ])
 
 def rotation_matrix(axis: np.ndarray, degrees: float) -> np.ndarray:
-    radians = radian(degrees)
+    radians = RADIANS * degrees
     rcos = math.cos(radians)
     rsin = math.sin(radians)
-    u,v,w = axis
+    u, v, w = axis
+    return rotation_matrix_formula(u, v, w, rcos, rsin)
+
+def rotation_matrix_formula(u: float, v: float, w: float, rcos: float, rsin: float) -> np.ndarray:
     return np.array([
         [rcos + u*u*(1-rcos), -w * rsin + u*v*(1-rcos), v * rsin + u*w*(1-rcos)],
         [w * rsin + v*u*(1-rcos), rcos + v*v*(1-rcos), -u * rsin + v*w*(1-rcos)],
         [-v * rsin + w*u*(1-rcos), u * rsin + w*v*(1-rcos), rcos + w*w*(1-rcos)]
     ])
 
+def rotation_vector(point: np.ndarray, v0: np.ndarray, v1:np.ndarray) -> np.ndarray:
+    axis = crossProduct(v0, v1)
+
+    if dotProduct(axis, axis) < EPSILON:
+        return point
+
+    axis = normalize(axis)
+    radians = angle(v0, v1)
+    rcos = math.cos(radians)
+    rsin = math.sin(radians)
+    return rotation_vector_formula(point, axis, rcos, rsin)
+    
+def rotation_vector_formula(point: np.ndarray, axis: np.ndarray, rcos: float, rsin: float) -> np.ndarray:
+    return np.dot(point, rcos) + crossProduct(axis, point) * rsin + np.dot(axis, dotProduct(axis, point)) * (1 - rcos)
+
 def rotate_axis_angle(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     axis = crossProduct(v1, v2)
-
-    EPSILON = 1e-6
 
     if dotProduct(axis, axis) < EPSILON:
         return np.identity(3)
 
     axis = normalize(axis)
-    
-    angle = math.acos(dotProduct(v1, v2))
-    return rotation_matrix(axis, degree(angle))
+    degrees = DEGREES * angle(v1, v2)
+    return rotation_matrix(axis, degrees)
 
 def rotate_axis_angle_matrix(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     axis = crossProduct(v1, v2)
-    
-    EPSILON = 1e-6
 
     if dotProduct(axis, axis) < EPSILON:
         return np.identity(3)
@@ -123,8 +141,6 @@ def project_to_plane(
 
     line = subtract(plane_origin, ray_origin)
     scale = dotProduct(ray_direction, plane_normal)
-
-    EPSILON = 1e-6
 
     # DivideByZeroError.
     if -EPSILON < scale < EPSILON:
@@ -182,8 +198,6 @@ def intersect_triangle_moller_trumbore(
     hit = False
     hitDistance = 0.0
     hitPoint = np.array([0,0,0])
-    
-    EPSILON = 1e-4
 
     edge1 = subtract(v1, v0)
     edge2 = subtract(v2, v0)
@@ -253,8 +267,6 @@ def point_in_triangle(
 
     normal = crossProduct(e1, e2)
     normal = normalize(normal)
-
-    EPSILON = 1e-6
 
     e1 = subtract(v1, v0)
     e2 = subtract(point, v0)
