@@ -15,7 +15,7 @@ class Application:
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Arial", 14)
 
-        self.controller = Controller(0.001, 0.01)
+        self.controller = Controller(0.01)
         self.camera = Camera([0, 0, 3])
         self.canvas = Canvas(self.camera, 640, 480)
         self.cube = Cube((0, 0, 0), (2, 2, 2))

@@ -2,16 +2,23 @@ import numpy as np
 import math
 
 def normal(v0: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
-    edge0 = np.subtract(v1, v0)
-    edge1 = np.subtract(v2, v0)
-    cross = np.cross(edge0, edge1)
+    edge0 = subtract(v1, v0)
+    edge1 = subtract(v2, v0)
+    cross = crossProduct(edge0, edge1)
     return normalize(cross)
 
 def subtract(v0: np.ndarray, v1: np.ndarray) -> np.ndarray:
     return np.array([v0[0] - v1[0], v0[1] - v1[1], v0[2] - v1[2]])
 
-def dotProduct(v0: np.ndarray, v1: np.ndarray) -> np.ndarray:
+def dotProduct(v0: np.ndarray, v1: np.ndarray) -> float:
     return v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2]
+
+def crossProduct(v0: np.ndarray, v1: np.ndarray) -> np.ndarray:
+    return np.array([
+        v0[1] * v1[2] - v0[2] * v1[1],
+        v0[2] * v1[0] - v0[0] * v1[2],
+        v0[0] * v1[1] - v0[1] * v1[0]
+    ])
 
 def normalize(v0: np.ndarray) -> np.ndarray:
     len = math.sqrt(dotProduct(v0, v0))
@@ -23,9 +30,9 @@ def normalize(v0: np.ndarray) -> np.ndarray:
     return np.array([x, y, z])
 
 def rotate(v0: np.ndarray, origin: np.ndarray, degrees: np.ndarray) -> np.ndarray:
-    v0 = np.add(origin, rotate_x(np.subtract(v0, origin), degrees[0]))
-    v0 = np.add(origin, rotate_y(np.subtract(v0, origin), degrees[1]))
-    v0 = np.add(origin, rotate_z(np.subtract(v0, origin), degrees[2]))
+    v0 = np.add(origin, rotate_x(subtract(v0, origin), degrees[0]))
+    v0 = np.add(origin, rotate_y(subtract(v0, origin), degrees[1]))
+    v0 = np.add(origin, rotate_z(subtract(v0, origin), degrees[2]))
     return v0
 
 def radian(degree: float) -> float:
@@ -64,32 +71,44 @@ def rotate_z(direction: np.ndarray, degrees: float) -> np.ndarray:
         direction[2]
     ])
 
-def rotation_matrix(axis, theta):
-    """
-    Return the rotation matrix associated with counterclockwise rotation about
-    the given axis by theta radians.
-    """
-    axis = np.asarray(axis)
-    axis = axis / math.sqrt(np.dot(axis, axis))
-    a = math.cos(theta / 2.0)
-    b, c, d = -axis * math.sin(theta / 2.0)
-    aa, bb, cc, dd = a * a, b * b, c * c, d * d
-    bc, ad, ac, ab, bd, cd = b * c, a * d, a * c, a * b, b * d, c * d
-    return np.array([[aa + bb - cc - dd, 2 * (bc + ad), 2 * (bd - ac)],
-                     [2 * (bc - ad), aa + cc - bb - dd, 2 * (cd + ab)],
-                     [2 * (bd + ac), 2 * (cd - ab), aa + dd - bb - cc]])
+def rotation_matrix(axis: np.ndarray, degrees: float) -> np.ndarray:
+    radians = radian(degrees)
+    rcos = math.cos(radians)
+    rsin = math.sin(radians)
+    u,v,w = axis
+    return np.array([
+        [rcos + u*u*(1-rcos), -w * rsin + u*v*(1-rcos), v * rsin + u*w*(1-rcos)],
+        [w * rsin + v*u*(1-rcos), rcos + v*v*(1-rcos), -u * rsin + v*w*(1-rcos)],
+        [-v * rsin + w*u*(1-rcos), u * rsin + w*v*(1-rcos), rcos + w*w*(1-rcos)]
+    ])
 
 def rotate_axis_angle(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
-    if np.array_equal(np.cross(v1, v2), [0,0,0]):
+    axis = crossProduct(v1, v2)
+
+    EPSILON = 1e-6
+
+    if dotProduct(axis, axis) < EPSILON:
+        return np.identity(3)
+
+    axis = normalize(axis)
+    
+    angle = math.acos(dotProduct(v1, v2))
+    return rotation_matrix(axis, degree(angle))
+
+def rotate_axis_angle_matrix(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+    axis = crossProduct(v1, v2)
+    
+    EPSILON = 1e-6
+
+    if dotProduct(axis, axis) < EPSILON:
         return np.identity(3)
     
-    axis = np.cross(v1, v2)
     axis = normalize(axis)
 
-    m1 = np.array([v1, axis, np.cross(axis, v1)])
+    m1 = np.array([v1, axis, crossProduct(axis, v1)])
     m1 = np.transpose(m1)
 
-    m2 = np.array([v2, axis, np.cross(axis, v2)])
+    m2 = np.array([v2, axis, crossProduct(axis, v2)])
     m2 = np.transpose(m2)
     
     m1 = np.linalg.inv(m1)
@@ -102,8 +121,8 @@ def project_to_plane(
         plane_normal: np.ndarray
     ) -> tuple[bool, float, np.ndarray]:
 
-    line = np.subtract(plane_origin, ray_origin)
-    scale = np.dot(ray_direction, plane_normal)
+    line = subtract(plane_origin, ray_origin)
+    scale = dotProduct(ray_direction, plane_normal)
 
     EPSILON = 1e-6
 
@@ -111,7 +130,7 @@ def project_to_plane(
     if -EPSILON < scale < EPSILON:
         return (False, 0, np.array([]))
 
-    hitDistance = np.dot(line, plane_normal) / scale
+    hitDistance = dotProduct(line, plane_normal) / scale
     hitPoint = ray_origin + hitDistance * ray_direction
 
     return (True, hitDistance, hitPoint)
@@ -128,7 +147,7 @@ def intersect_plane(
 
     if not hit: return (hit, hitDistance, hitPoint)
 
-    hit = hit and np.dot(ray_direction, plane_normal) < 0
+    hit = hit and dotProduct(ray_direction, plane_normal) < 0
     hit = hit and hitDistance > 0
 
     return (hit, hitDistance, hitPoint)
@@ -161,33 +180,33 @@ def intersect_triangle_moller_trumbore(
     ) -> tuple[bool, float, np.ndarray]:
 
     hit = False
-    hitDistance = 0
+    hitDistance = 0.0
     hitPoint = np.array([0,0,0])
     
     EPSILON = 1e-4
 
-    edge1 = np.subtract(v1, v0)
-    edge2 = np.subtract(v2, v0)
+    edge1 = subtract(v1, v0)
+    edge2 = subtract(v2, v0)
 
-    P = np.cross(ray_direction, edge2)
-    determinant = np.dot(P, edge1)
+    P = crossProduct(ray_direction, edge2)
+    determinant = dotProduct(P, edge1)
     if determinant < EPSILON:
         return (hit, hitDistance, hitPoint)
     
     inverseDeterminant = 1 / determinant
     
-    T = np.subtract(ray_origin, v0)
-    u_coordinate = inverseDeterminant * np.dot(P, T)
+    T = subtract(ray_origin, v0)
+    u_coordinate = inverseDeterminant * dotProduct(P, T)
     if u_coordinate < 0 or 1 < u_coordinate:
         return (hit, hitDistance, hitPoint)
 
-    Q = np.cross(T, edge1)
-    v_coordinate = inverseDeterminant * np.dot(Q, ray_direction)
+    Q = crossProduct(T, edge1)
+    v_coordinate = inverseDeterminant * dotProduct(Q, ray_direction)
     if v_coordinate < 0 or 1 < u_coordinate + v_coordinate:
         return (hit, hitDistance, hitPoint)
     
     hit = True
-    hitDistance = inverseDeterminant * np.dot(Q, edge2)
+    hitDistance = inverseDeterminant * dotProduct(Q, edge2)
     hitPoint = ray_origin + hitDistance * ray_direction
     return (hit, hitDistance, hitPoint)
 
@@ -229,30 +248,30 @@ def point_in_triangle(
         v2: np.ndarray
     ) -> tuple[bool, np.ndarray]:
 
-    e1 = np.subtract(v1, v0)
-    e2 = np.subtract(v2, v0)
+    e1 = subtract(v1, v0)
+    e2 = subtract(v2, v0)
 
-    normal = np.cross(e1, e2)
+    normal = crossProduct(e1, e2)
     normal = normalize(normal)
 
     EPSILON = 1e-6
 
-    e1 = np.subtract(v1, v0)
-    e2 = np.subtract(point, v0)
-    n0 = np.cross(e1, e2)
-    if np.dot(normal, n0) < -EPSILON:
+    e1 = subtract(v1, v0)
+    e2 = subtract(point, v0)
+    n0 = crossProduct(e1, e2)
+    if dotProduct(normal, n0) < -EPSILON:
         return (False, normal)
 
-    e1 = np.subtract(v2, v1)
-    e2 = np.subtract(point, v1)
-    n1 = np.cross(e1, e2)
-    if np.dot(normal, n1) < -EPSILON:
+    e1 = subtract(v2, v1)
+    e2 = subtract(point, v1)
+    n1 = crossProduct(e1, e2)
+    if dotProduct(normal, n1) < -EPSILON:
         return (False, normal)
     
-    e1 = np.subtract(v0, v2)
-    e2 = np.subtract(point, v2)
-    n2 = np.cross(e1, e2)
-    if np.dot(normal, n2) < -EPSILON:
+    e1 = subtract(v0, v2)
+    e2 = subtract(point, v2)
+    n2 = crossProduct(e1, e2)
+    if dotProduct(normal, n2) < -EPSILON:
         return (False, normal)
     
     return (True, normal)

@@ -18,7 +18,7 @@ class Camera:
         old_direction = self.cameraDirection
         old_direction = vector.normalize(old_direction)
 
-        new_direction = np.subtract(look_to, look_from)
+        new_direction = vector.subtract(look_to, look_from)
         new_direction = vector.normalize(new_direction)
         
         rotation = vector.rotate_axis_angle(old_direction, new_direction)
@@ -33,12 +33,12 @@ class Camera:
         self.upDirection = vector.normalize(self.upDirection)
 
     def right_direction(self) -> np.ndarray:
-        right = np.cross(self.cameraDirection, self.upDirection)
+        right = vector.crossProduct(self.cameraDirection, self.upDirection)
         right = vector.normalize(right)
         return right
 
     def up_direction(self) -> np.ndarray:
-        up = np.cross(self.right_direction(), self.cameraDirection)
+        up = vector.crossProduct(self.right_direction(), self.cameraDirection)
         up = vector.normalize(up)
         return up
 
@@ -93,10 +93,10 @@ class Camera:
         up = self.up_direction()
 
         # Forward vector should zero out on projection.
-        normalized = np.subtract(hitPoint, center)
+        normalized = vector.subtract(hitPoint, center)
 
-        normal_width = (1 + np.dot(right, normalized)) / 2 # [0,1]
-        normal_height = (1 + np.dot(up, normalized)) / 2 # [0,1]
+        normal_width = (1 + vector.dotProduct(right, normalized)) / 2 # [0,1]
+        normal_height = (1 + vector.dotProduct(up, normalized)) / 2 # [0,1]
 
         pixel_width = 640
         pixel_height = 480
@@ -112,4 +112,4 @@ class Camera:
         """
         The surface is visible when the distance along camera vision is positive.
         """
-        return np.dot(normal, np.subtract(point, self.cameraPosition)) > 0
+        return vector.dotProduct(normal, vector.subtract(point, self.cameraPosition)) > 0
