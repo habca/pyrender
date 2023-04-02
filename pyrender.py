@@ -1,7 +1,6 @@
 import pygame
 import numpy as np
 
-from canvas import Canvas
 from camera import Camera
 from cube import Cube
 from controller import Controller
@@ -16,8 +15,7 @@ class Application:
         self.font = pygame.font.SysFont("Arial", 14)
 
         self.controller = Controller(0.01)
-        self.camera = Camera([0, 0, 3])
-        self.canvas = Canvas(self.camera, 640, 480)
+        self.camera = Camera([0, 0, 3], (640, 480))
         self.cube = Cube((0, 0, 0), (2, 2, 2))
 
     def run(self):

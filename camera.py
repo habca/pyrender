@@ -4,14 +4,15 @@ import numpy as np
 import vector
 
 class Camera:
-    def __init__(self, cameraPosition: np.ndarray):
-        self.cameraPosition = cameraPosition      
+    def __init__(self, cameraPosition: np.ndarray, screenResolution: tuple[int, int]):
+        self.cameraPosition = cameraPosition
         self.orbitTarget = np.array([0,0,0])
 
         self.cameraDirection = np.array([0,0,-1])
         self.upDirection = np.array([0,1,0])
-        
+
         self.look_at(self.cameraPosition, self.orbitTarget)
+        self.screenResolution = screenResolution
 
     def look_at(self, look_from: np.ndarray, look_to: np.ndarray) -> None:
         old_direction = self.cameraDirection
@@ -97,8 +98,8 @@ class Camera:
         normal_width = (1 + vector.dotProduct(right, normalized)) / 2 # [0,1]
         normal_height = (1 + vector.dotProduct(up, normalized)) / 2 # [0,1]
 
-        pixel_width = 640
-        pixel_height = 480
+        pixel_width = self.screenResolution[0]
+        pixel_height = self.screenResolution[1]
 
         pixel_x = math.floor(normal_width * pixel_width)
         pixel_y = math.floor((1 - normal_height) * pixel_height)

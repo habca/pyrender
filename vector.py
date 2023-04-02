@@ -21,7 +21,11 @@ def normal(v0: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
     return normalize(cross)
 
 def subtract(v0: np.ndarray, v1: np.ndarray) -> np.ndarray:
-    return np.array([v0[0] - v1[0], v0[1] - v1[1], v0[2] - v1[2]])
+    return np.array([
+        v0[0] - v1[0],
+        v0[1] - v1[1],
+        v0[2] - v1[2]
+    ])
 
 def dotProduct(v0: np.ndarray, v1: np.ndarray) -> float:
     return v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2]
@@ -38,7 +42,11 @@ def length(v0: np.ndarray) -> float:
 
 def normalize(v0: np.ndarray) -> np.ndarray:
     len = length(v0)
-    return np.array([v0[0] / len, v0[1] / len, v0[2] / len])
+    return np.array([
+        v0[0] / len,
+        v0[1] / len,
+        v0[2] / len
+    ])
 
 def rotate(v0: np.ndarray, origin: np.ndarray, degrees: np.ndarray) -> np.ndarray:
     v0 = np.add(origin, rotate_x(subtract(v0, origin), degrees[0]))

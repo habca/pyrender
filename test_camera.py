@@ -41,14 +41,26 @@ class CameraTest(unittest.TestCase):
         cameraPosition = np.array(cameraPosition)
         worldPosition = np.array(worldPosition)
 
-        camera = Camera(cameraPosition)
+        camera = Camera(cameraPosition, (640, 480))
         (hit, _, _) = camera.projection(worldPosition)
         
         self.assertEqual(expected, hit)
 
+    @data(
+        ([0,0,2], [0,0,0], [320,240]),
+        ([10,15,5], [10,15,-5], [320,240]),
+    )
+    @unpack
+    def test_projection_point(self, cameraPosition: np.ndarray, worldPosition: np.ndarray, expected: np.ndarray):
+        camera = Camera(cameraPosition, (640, 480))
+        camera.look_at(cameraPosition, worldPosition)
+
+        (_, _, screenPosition) = camera.projection(worldPosition)
+        np.testing.assert_almost_equal(expected, screenPosition)
+
     def test_rotate_orbit_zero_angle(self):
         cameraPosition = np.array([0,0,3])
-        camera = Camera(cameraPosition)
+        camera = Camera(cameraPosition, (640, 480))
         camera.rotate_orbit(0, 0)
 
         np.testing.assert_almost_equal([0,0,3], camera.cameraPosition)
