@@ -14,6 +14,19 @@ class Camera:
         self.look_at(self.cameraPosition, self.orbitTarget)
         self.screenResolution = screenResolution
 
+    def clone(self) -> "Camera":
+        """
+        Rendering an image takes a while and a camera must stay still.
+        """
+        copy = Camera(self.cameraPosition, self.screenResolution)
+        copy.cameraPosition = np.array(self.cameraPosition)
+        copy.orbitTarget = np.array(self.cameraDirection)
+        copy.cameraDirection = np.array(self.cameraDirection)
+        copy.upDirection = np.array(self.upDirection)
+        copy.look_at(copy.cameraPosition, copy.orbitTarget)
+        copy.screenResolution = self.screenResolution
+        return copy
+
     def look_at(self, look_from: np.ndarray, look_to: np.ndarray) -> None:
         old_direction = self.cameraDirection
         old_direction = vector.normalize(old_direction)
@@ -108,8 +121,12 @@ class Camera:
 
         return (hit, hitDistance, hitPoint)
 
-    def visible_surface(self, point: np.ndarray, normal: np.ndarray) -> bool:
+    def visible_surface(self, v0: np.ndarray, v1: np.ndarray, v2: np.ndarray) -> bool:
         """
-        The surface is visible when the distance along camera vision is positive.
+        In right-handed coordinate system: right ^ up = forward
+        When camera points downwards the Z axis: up ^ right = forward
         """
-        return vector.dotProduct(normal, vector.subtract(point, self.cameraPosition)) > 0
+
+        normal = vector.normal(v0, v2, v1)
+        ray_direction = vector.subtract(v0, self.cameraPosition)
+        return vector.dotProduct(normal, ray_direction) < 0

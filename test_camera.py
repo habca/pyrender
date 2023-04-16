@@ -87,5 +87,19 @@ class CameraTest(unittest.TestCase):
         np.testing.assert_almost_equal([3,0,0], camera.cameraPosition)
     """
 
+    def test_visible_surface(self):
+        cameraPosition = np.array([0, 0, 10])
+        camera = Camera(cameraPosition, (640, 480))
+        
+        np.testing.assert_almost_equal(camera.right_direction(), [1, 0, 0])
+        np.testing.assert_almost_equal(camera.up_direction(), [0, 1, 0])
+        np.testing.assert_almost_equal(camera.cameraDirection, [0, 0, -1])
+
+        v0 = np.array([-7.5, 5.5, -7.5])
+        v1 = np.array([-7.5, 5.5, -6.5])
+        v2 = np.array([-6.5, 6.5, -7.5])
+
+        self.assertTrue(camera.visible_surface(v0, v1, v2))
+
 if __name__ == "__main__":
     unittest.main()

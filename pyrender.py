@@ -4,7 +4,7 @@ import numpy as np
 from camera import Camera
 from cube import Cube
 from controller import Controller
-import vector
+from file import File
 
 class Application:
     def __init__(self):
@@ -15,8 +15,11 @@ class Application:
         self.font = pygame.font.SysFont("Arial", 14)
 
         self.controller = Controller(0.01)
-        self.camera = Camera([0, 0, 3], (640, 480))
-        self.cube = Cube((0, 0, 0), (2, 2, 2))
+        self.camera = Camera(np.array([0, 0, 20]), (640, 480))
+        self.camera.rotate_orbit(-60, 0)
+
+        self.file = File("model.obj")
+        self.cube = Cube(np.array([0, 0, 0]), np.array([2, 2, 2]))
 
     def run(self):
         ms = self.clock.tick(60)
@@ -48,8 +51,8 @@ class Application:
         self.camera.scale_orbit(sz)
 
         # Update screen
-        vertices = self.cube.get_vertices()
-        triangles = self.cube.get_triangles()
+        vertices = self.file.vertices
+        triangles = self.file.triangles
         self.draw_triangles(vertices, triangles)
 
         pygame.display.flip()
@@ -65,14 +68,16 @@ class Application:
             (hit1, _, px1) = self.camera.projection(v1)
             (hit2, _, px2) = self.camera.projection(v2)
 
-            color = pygame.Color(255, 0, 0)
-            normal = vector.normal(v0, v1, v2)
-            
-            if self.camera.visible_surface(v0, normal):
-                color = pygame.Color(0, 0, 0)
+            color = pygame.Color(0, 0, 0)
+            if not self.camera.visible_surface(v0, v1, v2):
+                color = pygame.Color(255, 0, 0)
             
             if hit0 and hit1 and hit2:
-                pygame.draw.polygon(self.screen, color, (px0, px1, px2), 2)
+                points = (list(px0), list(px1), list(px2))
+                pygame.draw.polygon(self.screen, color, points, 2)
+
+            # ray_origin = self.camera.cameraPosition
+            # ray_direction = self.camera.ray_from_pixel(x, y)
 
 if __name__ == "__main__":
     Application().run()
