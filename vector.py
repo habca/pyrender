@@ -27,6 +27,20 @@ def subtract(v0: np.ndarray, v1: np.ndarray) -> np.ndarray:
         v0[2] - v1[2]
     ])
 
+def add(v0: np.ndarray, v1: np.ndarray) -> np.ndarray:
+    return np.array([
+        v0[0] + v1[0],
+        v0[1] + v1[1],
+        v0[2] + v1[2]
+    ])
+
+def product(x: float, v0: np.ndarray) -> np.ndarray:
+    return np.array([
+        v0[0] * x,
+        v0[1] * x,
+        v0[2] * x
+    ])
+
 def dotProduct(v0: np.ndarray, v1: np.ndarray) -> float:
     return v0[0] * v1[0] + v0[1] * v1[1] + v0[2] * v1[2]
 

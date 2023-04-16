@@ -12,20 +12,9 @@ class Camera:
         self.upDirection = np.array([0,1,0])
 
         self.look_at(self.cameraPosition, self.orbitTarget)
-        self.screenResolution = screenResolution
 
-    def clone(self) -> "Camera":
-        """
-        Rendering an image takes a while and a camera must stay still.
-        """
-        copy = Camera(self.cameraPosition, self.screenResolution)
-        copy.cameraPosition = np.array(self.cameraPosition)
-        copy.orbitTarget = np.array(self.cameraDirection)
-        copy.cameraDirection = np.array(self.cameraDirection)
-        copy.upDirection = np.array(self.upDirection)
-        copy.look_at(copy.cameraPosition, copy.orbitTarget)
-        copy.screenResolution = self.screenResolution
-        return copy
+        self.imageWidth = screenResolution[0]
+        self.imageHeight = screenResolution[1]
 
     def look_at(self, look_from: np.ndarray, look_to: np.ndarray) -> None:
         old_direction = self.cameraDirection
@@ -111,8 +100,8 @@ class Camera:
         normal_width = (1 + vector.dotProduct(right, normalized)) / 2 # [0,1]
         normal_height = (1 + vector.dotProduct(up, normalized)) / 2 # [0,1]
 
-        pixel_width = self.screenResolution[0]
-        pixel_height = self.screenResolution[1]
+        pixel_width = self.imageWidth
+        pixel_height = self.imageHeight
 
         pixel_x = math.floor(normal_width * pixel_width)
         pixel_y = math.floor((1 - normal_height) * pixel_height)
@@ -130,3 +119,24 @@ class Camera:
         normal = vector.normal(v0, v2, v1)
         ray_direction = vector.subtract(v0, self.cameraPosition)
         return vector.dotProduct(normal, ray_direction) < 0
+
+    def screen_to_ray(self, screenPixel: tuple[int, int]) -> np.ndarray:
+        # imageAspectRatio = self.imageWidth / self.imageHeight
+        
+        x = (1 - 2 * ((screenPixel[0]) / self.imageWidth))
+        y = (1 - 2 * ((screenPixel[1]) / self.imageHeight))
+
+        fieldOfView = 90
+
+        mx = x * (math.tan(vector.RADIANS * (fieldOfView / 2)))
+        my = y * (math.tan(vector.RADIANS * (fieldOfView / 2)))
+
+        dx = vector.product(-1 * mx, self.right_direction())
+        dy = vector.product(my, self.up_direction())
+
+        ray_direction = self.cameraDirection
+        ray_direction = vector.add(ray_direction, dx)
+        ray_direction = vector.add(ray_direction, dy)
+        ray_direction = vector.normalize(ray_direction)
+
+        return ray_direction

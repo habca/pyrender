@@ -5,6 +5,7 @@ from camera import Camera
 from cube import Cube
 from controller import Controller
 from file import File
+import vector
 
 class Application:
     def __init__(self):
@@ -33,12 +34,14 @@ class Application:
                 exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed()[2]:
-                    self.controller.mouse_button_down(pygame.mouse.get_pos())
+                    self.controller.right_mouse_button_down(pygame.mouse.get_pos())
             if event.type == pygame.MOUSEBUTTONUP:
                 if not pygame.mouse.get_pressed()[2]:
-                    self.controller.mouse_button_up()
+                    self.controller.right_mouse_button_up()
             if event.type == pygame.MOUSEMOTION:
-                self.controller.mouse_motion(pygame.mouse.get_pos(), time)
+                self.controller.left_mouse_motion(pygame.mouse.get_pos())
+                if pygame.mouse.get_pressed()[2]:                  
+                    self.controller.right_mouse_motion(pygame.mouse.get_pos(), time)
             if event.type == pygame.MOUSEWHEEL:
                 self.controller.mouse_wheel(event.y, time)
 
@@ -54,9 +57,34 @@ class Application:
         vertices = self.file.vertices
         triangles = self.file.triangles
         self.draw_triangles(vertices, triangles)
+        self.draw_line(vertices, triangles)
 
         pygame.display.flip()
         self.clock.tick(60)
+
+    def draw_line(self, vertices: list[np.ndarray], triangles: list[np.ndarray]) -> None:
+        screenPixel = self.controller.left_mouse_position
+        ray_origin = self.camera.cameraPosition
+        ray_direction = self.camera.screen_to_ray(screenPixel)
+
+        for i in range(len(triangles) // 3):
+            v0 = vertices[triangles[i * 3 + 0]]
+            v1 = vertices[triangles[i * 3 + 1]]
+            v2 = vertices[triangles[i * 3 + 2]]
+
+            (hit, hitDistance, hitPoint) = vector.intersect_triangle(
+                ray_origin, ray_direction, v0, v2, v1)
+
+            if hit:
+                (hit, _, screenPixel) = self.camera.projection(hitPoint)
+
+                if hit:
+                    color = pygame.Color(0, 0, 255)
+                    pygame.draw.circle(self.screen, color, screenPixel, 5, 2)
+                    return
+        
+        color = pygame.Color(255, 0, 0)
+        pygame.draw.circle(self.screen, color, screenPixel, 5, 2)
 
     def draw_triangles(self, vertices: list[np.ndarray], triangles: list[int]) -> None:
         for i in range(len(triangles) // 3):
@@ -75,9 +103,6 @@ class Application:
             if hit0 and hit1 and hit2:
                 points = (list(px0), list(px1), list(px2))
                 pygame.draw.polygon(self.screen, color, points, 2)
-
-            # ray_origin = self.camera.cameraPosition
-            # ray_direction = self.camera.ray_from_pixel(x, y)
 
 if __name__ == "__main__":
     Application().run()
